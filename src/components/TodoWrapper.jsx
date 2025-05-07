@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import { Todo } from './Todo.jsx';
 import { TodoForm } from './TodoForm.jsx';
 import { v4 as uuidv4 } from 'uuid';
@@ -7,15 +7,57 @@ import { EditTodoForm } from './EditTodoForm.jsx';
 
 uuidv4();
 
+const instance = axios.create({
+    baseURL: 'http://localhost:5000/api/todos',
+    timeout: 60000,
+});
+
+async function getTodos() {
+    return await instance.get('/');
+}
+
+async function postTodo(item) {
+    return await instance.post('/', {"task": item});
+}
+
+async function deleteTodo(id) {
+    return await instance.delete('/' + id);
+}
+
+async function putTodo(id, update) {
+    return await instance.put('/' + id, {"task": update});
+}
+
 export const TodoWrapper = () => {
     const [toDos, setToDos] = useState([])
     const [showCompleted, setShowCompleted] = useState(false);
 
-    const addToDo = toDo => {
+    useEffect(() => {
+        const initTodos = async () => {
+            const todoRes = await getTodos();
+            const todoData = [...todoRes.data];
+            const mappedTodo = todoData.map((item) => {
+                return {
+                    id: item._id,
+                    task: item.task,
+                    completed: item.completed,
+                    isEditing: false
+                }
+            });
+            
+            setToDos(mappedTodo);
+        }
+
+        initTodos();
+    }, []);
+
+    const addToDo = async toDo => {
+        const todoRes = await postTodo(toDo);
+        const todoData = {...todoRes.data}
             setToDos([...toDos, {
-                id: uuidv4(),
-                task: toDo,
-                completed: false,
+                id: todoData._id,
+                task: todoData.task,
+                completed: todoData.completed,
                 isEditing: false
             }]);
 
