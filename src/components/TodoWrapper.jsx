@@ -53,7 +53,7 @@ export const TodoWrapper = () => {
 
     const addToDo = async toDo => {
         const todoRes = await postTodo(toDo);
-        const todoData = {...todoRes.data}
+        const todoData = {...todoRes.data};
             setToDos([...toDos, {
                 id: todoData._id,
                 task: todoData.task,
@@ -69,7 +69,8 @@ export const TodoWrapper = () => {
         todo, completed: !todo.completed} : todo ))
     }
 
-    const deleteToDo = id => {
+    const deleteToDo = async id => {
+        await deleteTodo(id);
         setToDos(toDos.filter(todo => todo.id !== id))
     }
 
@@ -78,7 +79,8 @@ export const TodoWrapper = () => {
             todo, isEditing: !todo.isEditing} : todo));
     }
 
-    const editTask = (updatedTask,id) => {
+    const editTask = async (updatedTask,id) => {
+        await putTodo(id, updatedTask)
         setToDos(toDos.map(todo => todo.id === id ? {...
             todo, task: updatedTask, isEditing: false} : todo));
     }
